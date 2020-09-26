@@ -212,6 +212,7 @@ void Optimizer::BundleAdjustment(const vector<KeyFrame *> &vpKFs, const vector<M
     //Points
     for(size_t i=0; i<vpMP.size(); i++)
     {
+
         if(vbNotIncludedMP[i])
             continue;
 
@@ -233,7 +234,6 @@ void Optimizer::BundleAdjustment(const vector<KeyFrame *> &vpKFs, const vector<M
             pMP->mnBAGlobalForKF = nLoopKF;
         }
     }
-
 }
 
 int Optimizer::PoseOptimization(Frame *pFrame)

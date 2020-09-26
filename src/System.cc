@@ -215,7 +215,7 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
     return Tcw;
 }
 
-cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp)
+cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp, string imgId)
 {
     if(mSensor!=MONOCULAR)
     {
@@ -257,7 +257,7 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp)
     }
     }
 
-    cv::Mat Tcw = mpTracker->GrabImageMonocular(im,timestamp);
+    cv::Mat Tcw = mpTracker->GrabImageMonocular(im, timestamp, imgId);
 
     unique_lock<mutex> lock2(mMutexState);
     mTrackingState = mpTracker->mState;
@@ -322,11 +322,11 @@ void System::Shutdown()
 void System::SaveTrajectoryTUM(const string &filename)
 {
     cout << endl << "Saving camera trajectory to " << filename << " ..." << endl;
-    if(mSensor==MONOCULAR)
+    /*if(mSensor==MONOCULAR)
     {
         cerr << "ERROR: SaveTrajectoryTUM cannot be used for monocular." << endl;
         return;
-    }
+    }*/
 
     vector<KeyFrame*> vpKFs = mpMap->GetAllKeyFrames();
     sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
@@ -370,7 +370,8 @@ void System::SaveTrajectoryTUM(const string &filename)
         cv::Mat Tcw = (*lit)*Trw;
         cv::Mat Rwc = Tcw.rowRange(0,3).colRange(0,3).t();
         cv::Mat twc = -Rwc*Tcw.rowRange(0,3).col(3);
-
+        cv::Mat C = (cv::Mat_<float>(3,3) << 0, 1, 0, 0, 0, -1, -1, 0, 0);
+        Rwc = Rwc * C ;
         vector<float> q = Converter::toQuaternion(Rwc);
 
         f << setprecision(6) << *lT << " " <<  setprecision(9) << twc.at<float>(0) << " " << twc.at<float>(1) << " " << twc.at<float>(2) << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
@@ -395,6 +396,8 @@ void System::SaveKeyFrameTrajectoryTUM(const string &filename)
     f.open(filename.c_str());
     f << fixed;
 
+    cout<<"number of keyframes : "<<vpKFs.size()<<endl;
+
     for(size_t i=0; i<vpKFs.size(); i++)
     {
         KeyFrame* pKF = vpKFs[i];
@@ -405,6 +408,8 @@ void System::SaveKeyFrameTrajectoryTUM(const string &filename)
             continue;
 
         cv::Mat R = pKF->GetRotation().t();
+        cv::Mat C = (cv::Mat_<float>(3,3) << 0, 1, 0, 0, 0, -1, -1, 0, 0);
+        R = R * C ;
         vector<float> q = Converter::toQuaternion(R);
         cv::Mat t = pKF->GetCameraCenter();
         f << setprecision(6) << pKF->mTimeStamp << setprecision(7) << " " << t.at<float>(0) << " " << t.at<float>(1) << " " << t.at<float>(2)

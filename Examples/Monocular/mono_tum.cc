@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 #endif
 
         // Pass the image to the SLAM system
-        SLAM.TrackMonocular(im,tframe);
+        SLAM.TrackMonocular(im, tframe, vstrImageFilenames[ni]);
 
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
@@ -121,6 +121,8 @@ int main(int argc, char **argv)
 
     // Save camera trajectory
     SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
+    SLAM.SaveTrajectoryTUM("FrameTrajectory.txt");
+
 
     return 0;
 }
@@ -135,11 +137,16 @@ void LoadImages(const string &strFile, vector<string> &vstrImageFilenames, vecto
     getline(f,s0);
     getline(f,s0);
     getline(f,s0);
-
+    int c=0;
     while(!f.eof())
     {
         string s;
         getline(f,s);
+        /*if(c%2==0){
+            c++;
+            continue;
+        }*/
+
         if(!s.empty())
         {
             stringstream ss;

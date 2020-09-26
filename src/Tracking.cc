@@ -235,10 +235,11 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const d
 }
 
 
-cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp)
+cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp, string imgId)
 {
     mImGray = im;
-
+    //pushyami
+    mImId = imgId;
     if(mImGray.channels()==3)
     {
         if(mbRGB)
